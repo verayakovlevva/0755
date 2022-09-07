@@ -1,35 +1,73 @@
 // ==UserScript==
-// @name         BingBot
+// @name         BingBot Samokat
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  try to take over the world!
 // @author       Vera Yakovleva
 // @match        https://www.bing.com/*
+// @match        https://samokat.ru/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        none
 // ==/UserScript==
 
-
-
 let links = document.links;
 let btnSearch = document.getElementById("search_icon");
-let keywords = ["Купить автомобиль", "Машины с пробегом", "Продать авто"];
+let keywords = ["Онлайн магазин с доставкой еды", "Продукты с доставкой рядом", "Доставка товаров для дома"];
 let keyword = keywords[getRandom(0, keywords.length)];
+let bingInput = document.getElementById("sb_form_q");
 
 if (btnSearch !== null) {
-    document.getElementById("sb_form_q").value = keyword;
-    btnSearch.click();
-}
+    let i = 0;
 
-else {
-    for(let i=0; i<links.length; i++) {
-        if(links[i].href.indexOf("auto.ru") !== -1) {
+    let timerId = setInterval(()=> {
+        bingInput.value += keyword[i];
+        i++;
+        if (i == keyword.length) {
+            clearInterval(timerId);
+            setTimeout(()=>{
+                btnSearch.click();
+            }, getRandom(1000, 2500));
+        }
+    },500);
+
+} else if(location.hostname == "samokat.ru") {
+    console.log("Ура, я поем!");
+
+    setInterval(()=>{
+        let index = getRandom(0, links.length);
+        if(getRandom(0, 101) > 70){
+            location.href = "https://www.bing.com/";
+        }
+        if(links[index].href.indexOf("samokat.ru") !== -1){
+            links[index].click();}
+    }, getRandom(2000, 3500))
+
+} else {
+    let nextBingPage = true;
+
+    for (let i=0; i<links.length; i++) {
+        if (links[i].href.indexOf("samokat.ru") !== -1) {
+            console.log("Нашел строку " + links[i]);
             let link = links[i];
-            document.location.href = link;
+            nextBingPage = false;
+            setTimeout(()=>{
+                document.location.href = link;
+            }, getRandom(3500,4500))
             break;
         };
     };
-};
+    if (document.querySelector(".sb_pagS").innerText == "4") {
+        nextBingPage = false;
+        location.href = "https://www.bing.com/";
+    }
+
+    if (nextBingPage) {
+        setTimeout(()=>{
+            document.querySelector(".sb_pagN.sb_pagN_bp.b_widePag.sb_bp").click();
+        }, getRandom(3000, 5000));
+
+    }
+}
 
 function getRandom(min, max) {
     return Math.floor(Math.random()*(max - min) + min);
